@@ -1,7 +1,15 @@
+<<<<<<< HEAD
+=======
+node_modules
+>>>>>>> origin/main
 node_modules/
 dist/
 .env
 .env.*
 !.env.example
 .DS_Store
+<<<<<<< HEAD
 .vscode/
+=======
+.vscode/
+>>>>>>> origin/main

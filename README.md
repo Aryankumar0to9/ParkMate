@@ -1,42 +1,116 @@
-# ParkMate 🚗
+ParkMate 🚗
 
-ParkMate is a mobile-first parking assistant for saving a vehicle's parking coordinates, recording a walking trail, and helping users return to their vehicle.
+Your smart companion for remembering where you parked.
 
-## Features
+ParkMate is a mobile-first vehicle parking assistant that helps users save parking locations, record GPS paths, and navigate back to their parked vehicles.
 
-- **Map-first home screen:** live map directly below the ParkMate header; the promotional hero banner has been removed.
-- **Pin Location:** choose a vehicle type or skip, preview the detected GPS location on a map, then confirm before saving coordinates.
-- **Path Recording:** record a GPS trail away from the parking anchor, with manual or configured time/distance stopping options.
-- **Return navigation:** view saved parking and use a recorded trail in reverse.
-- **Vehicle profiles, parking history, and location sharing.**
-- **Local storage:** parking sessions are stored in the browser on this device. No cloud account/backend is configured.
+✨ Features
 
-## Tech stack
+📍 Pin Location
 
-React, TypeScript, Vite, Leaflet, OpenStreetMap data via CARTO's light tile style, browser Geolocation API, IndexedDB, and PWA configuration.
+Save your current parking location using GPS.
 
-## Requirements
+Add vehicle details, photos, and notes.
+
+Open directions to your saved location in Google Maps.
+
+Share your parking location.
+
+🧭 Path Recording
+
+Record your GPS trail while walking away from your vehicle.
+
+Stop recording manually or set time and distance limits.
+
+Filter inaccurate GPS readings and smooth the displayed route.
+
+Reverse the recorded path to help you return to your vehicle.
+
+🗺️ Return Navigation
+
+View your saved parking location and recorded route on a map.
+
+Track your current position.
+
+Follow your recorded path back to your vehicle.
+
+🚘 Vehicle Profiles
+
+Organize parking sessions by vehicle.
+
+Store relevant vehicle information.
+
+Review previous parking sessions.
+
+🛠️ Technology Stack
+
+React
+
+TypeScript
+
+Vite
+
+Leaflet
+
+OpenStreetMap
+
+Browser Geolocation API
+
+IndexedDB
+
+Progressive Web App (PWA) configuration
+
+🚀 Getting Started
+
+Prerequisites
 
 Install Node.js 20.19+ or 22.12+.
 
-## Run locally
+Installation
 
-Extract the project ZIP, open a terminal in the folder containing `package.json`, then run:
+Clone the repository:
 
-```bash
+git clone https://github.com/Aryankumar0to9/ParkMate.git
+cd ParkMate
+
+Install dependencies:
+
 npm install
+
+Start the development server:
+
 npm run dev
-```
 
-Open the local URL printed by Vite. For a production build, run `npm run build`.
+Build the project:
 
-## Notes
+npm run build
 
-- Allow location access in the browser for live GPS features. Accuracy depends on the device and environment.
-- Browser-based tracking may pause when the app is backgrounded or the device sleeps.
-- The public CARTO tile endpoint is subject to provider terms and rate limits. Choose a provider and plan suitable for production traffic before public launch.
-- The build should be tested locally after installing dependencies.
+🔒 Privacy
 
-## License
+The initial version is designed to store parking sessions locally on the device. Location functionality requires user permission. GPS accuracy and background tracking may vary by device and browser.
 
-No license has been selected yet.
+🗺️ Roadmap
+
+Initial React and TypeScript scaffold
+
+Test GPS recording and location accuracy
+
+Improve GPS filtering and route smoothing
+
+Refine reverse-path navigation
+
+Test session persistence and recovery
+
+Improve mobile responsiveness
+
+Test on Android devices
+
+🤝 Contributing
+
+Suggestions, bug reports, and improvements are welcome. Open an issue or submit a pull request.
+
+📄 License
+
+A license has not yet been selected.
+
+ParkMate — Park it. Explore. Find your way back.
