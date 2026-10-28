@@ -6,6 +6,7 @@ import {
   ShieldCheck, SlidersHorizontal, Smartphone, Timer, Trash2, UserRound, X
 } from 'lucide-react';
 import MapView from './components/MapView';
+import { Geolocation } from '@capacitor/geolocation';
 import { acceptGpsPoint, bearingDegrees, distanceMeters, formatDistance, formatDuration, mapsUrl, smoothTrail } from './geo';
 import { getSession, loadState, makeId, saveState } from './storage';
 import type { AppState, Coordinate, ParkingSession, RecordingLimit, SessionMode, Vehicle, VehicleType } from './types';
@@ -84,25 +85,54 @@ export default function App() {
   const latestSession = useMemo(() => [...state.sessions].sort((a, b) => b.createdAt - a.createdAt)[0], [state.sessions]);
   const selectedVehicle = state.vehicles.find(v => v.id === state.selectedVehicleId) ?? state.vehicles[0];
 
-  const locate = useCallback((onSuccess: (point: Coordinate) => void) => {
-    if (!navigator.geolocation) {
-      setGpsStatus('error'); setGpsMessage('This browser does not support GPS location.'); return;
+
+  const locate = useCallback(async (onSuccess: (point: Coordinate) => void) => {
+    setGpsStatus('locating');
+    setGpsMessage('Finding your location…');
+
+    try {
+      const permission = await Geolocation.checkPermissions();
+
+      if (
+        permission.location !== 'granted' &&
+        permission.coarseLocation !== 'granted'
+      ) {
+        const requested = await Geolocation.requestPermissions();
+
+        if (
+          requested.location !== 'granted' &&
+          requested.coarseLocation !== 'granted'
+        ) {
+          setGpsStatus('error');
+          setGpsMessage('Location permission denied. Enable location access in your phone settings.');
+          return;
+        }
+      }
+
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 3000
+      });
+
+      const point: Coordinate = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        timestamp: position.timestamp,
+        accuracy: position.coords.accuracy
+      };
+
+      setCurrent(point);
+      setGpsStatus('ready');
+      setGpsMessage(`GPS accuracy ±${Math.round(point.accuracy ?? 0)} m`);
+      onSuccess(point);
+    } catch (error) {
+      console.error('GPS location error:', error);
+      setGpsStatus('error');
+      setGpsMessage('Could not get your location. Check GPS permissions and try again.');
     }
-    setGpsStatus('locating'); setGpsMessage('Finding your location…');
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const point = makeCoordinate(position);
-        setCurrent(point); setGpsStatus('ready');
-        setGpsMessage(`GPS accuracy ±${Math.round(point.accuracy ?? 0)} m`);
-        onSuccess(point);
-      },
-      error => {
-        setGpsStatus('error');
-        setGpsMessage(error.code === 1 ? 'Location permission was denied. Enable it in browser settings.' : 'Could not get a GPS fix. Move to an open area and try again.');
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
-    );
   }, []);
+
 
   const stopWatch = useCallback(() => {
     if (watchIdRef.current !== null) navigator.geolocation?.clearWatch(watchIdRef.current);
@@ -270,14 +300,35 @@ export default function App() {
 
   const activeRoute = activeSession?.trail ?? [];
   const pathToDisplay = returnSession?.trail ?? [];
-  const arrowBearing = useMemo(() => {
-    if (!returnSession || returnSession.trail.length < 2 || !current) return 0;
-    const reversed = [...returnSession.trail].reverse();
-    let nearest = 0, min = Infinity;
-    reversed.forEach((p, i) => { const d = distanceMeters(current, p); if (d < min) { min = d; nearest = i; } });
-    const target = reversed[Math.min(nearest + 1, reversed.length - 1)];
-    return bearingDegrees(current, target);
-  }, [returnSession, current]);
+ const returnGuidance = useMemo(() => {
+  if (!returnSession || returnSession.trail.length < 2 || !current) {
+    return { bearing: 0, distanceToNext: null as number | null };
+  }
+
+  // Build the route from the parking anchor back along the recorded trail.
+  const reversed = [...returnSession.trail].reverse();
+
+  // Find the route point closest to the user's current position.
+  let nearest = 0;
+  let min = Infinity;
+
+  reversed.forEach((point, index) => {
+    const distance = distanceMeters(current, point);
+    if (distance < min) {
+      min = distance;
+      nearest = index;
+    }
+  });
+
+  // Move forward along the reversed route toward the parking anchor.
+  const targetIndex = Math.min(nearest + 1, reversed.length - 1);
+  const target = reversed[targetIndex];
+
+  return {
+    bearing: bearingDegrees(current, target),
+    distanceToNext: distanceMeters(current, target)
+  };
+}, [returnSession, current]);
 
   const requestReturnLocation = () => locate(() => setNotice('Location updated.'));
   const startReturn = (session: ParkingSession) => {
@@ -380,7 +431,7 @@ export default function App() {
             <>
               <div className="return-map"><MapView anchor={returnSession.anchor} current={current} trail={pathToDisplay} reverse height="44vh"/></div>
               <div className="direction-card">
-                <div className="direction-arrow" style={{ transform: `rotate(${arrowBearing}deg)` }}><ArrowUp size={28}/></div>
+                <div className="direction-arrow"style={{ transform: `rotate(${returnGuidance.bearing}deg)` }}><ArrowUp size={28}/></div>
                 <div className="direction-copy"><span className="eyebrow">FOLLOW THE RECORDED PATH</span><h3>Head toward the next point</h3><p>Use the green trail as your route reference.</p></div>
               </div>
               <div className="return-stats">

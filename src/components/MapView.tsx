@@ -21,8 +21,18 @@ export default function MapView({
 
   useEffect(() => {
     if (!elementRef.current || mapRef.current) return;
-    const initial = current ?? anchor ?? { lat: 28.6139, lng: 77.2090 };
-    const map = L.map(elementRef.current, { zoomControl: false, attributionControl: true }).setView([initial.lat, initial.lng], 17);
+   const initial = current ?? anchor;
+const map = L.map(elementRef.current, {
+  zoomControl: false,
+  attributionControl: true
+});
+
+if (initial) {
+  map.setView([initial.lat, initial.lng], 17);
+} else {
+  // Neutral India-wide view until a real GPS fix is available.
+  map.setView([20.5937, 78.9629], 5);
+}
     L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer(
   'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -58,13 +68,7 @@ export default function MapView({
       L.polyline(route.map(p => [p.lat, p.lng] as L.LatLngTuple), {
         color: '#16865c', weight: 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round', smoothFactor: 1.5
       }).addTo(layer);
-      route.forEach((point, index) => {
-        if (index > 0 && index < route.length - 1 && index % 5 === 0) {
-          L.circleMarker([point.lat, point.lng], {
-            radius: 3, color: '#ffffff', weight: 2, fillColor: '#16865c', fillOpacity: 1
-          }).addTo(layer);
-        }
-      });
+    
     }
 
     if (anchor) {

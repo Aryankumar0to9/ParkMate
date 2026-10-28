@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">parkmate</string>
+    <string name="title_activity_main">parkmate</string>
+    <string name="package_name">com.aryan0to9.parkmate</string>
+    <string name="custom_url_scheme">com.aryan0to9.parkmate</string>
+</resources>
